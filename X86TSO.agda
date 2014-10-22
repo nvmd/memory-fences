@@ -101,9 +101,6 @@ notblocked : (l : LockSt) → Thr → Set
 notblocked nothing  t' = ⊤
 notblocked (just t) t' = t ≡ t'
 
-_≠_ : {X : Set} → X → X → Set
-t ≠ t' = t ≡ t' → ⊥
-
 infix 3 _⊢_⟶_
 infix 3 _⟶_
 
@@ -119,7 +116,7 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
   ⟶:=a : ∀ {ls gm x e lm rc wc v lm'}
           → t ⊢ 〈 ls / gm 〉 , e , lm , rc , wc  ⟶e v
           → v ≡ lm' x
-          → ((x' : Loc t) →  x ≠ x' → lm x' ≡ lm' x')
+          → ((x' : Loc t) →  x ≢ x' → lm x' ≡ lm' x')
           → t ⊢ 〈 ls / gm 〉 , 〈 just (L x := e) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm' / rc / wc 〉
 
 
@@ -150,5 +147,5 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
 data _⟶_ : GlobCfg × LocCfgs → GlobCfg × LocCfgs → Set where
    step : (t : Thr) → ∀ {ls gm lcfgs ls' gm' lcfgs'}
           → t ⊢ 〈 ls / gm 〉 , lcfgs t ⟶ 〈 ls' / gm' 〉 , lcfgs' t
-          → ((t' : Thr) → t ≠ t' → lcfgs t' ≡ lcfgs' t')
+          → ((t' : Thr) → t ≢ t' → lcfgs t' ≡ lcfgs' t')
           → 〈 ls / gm 〉 , lcfgs ⟶ 〈 ls' / gm' 〉 , lcfgs'
