@@ -38,10 +38,6 @@ data Ty : Set where
     I : Ty
     B : Ty
 
-data Level : Set where
-    Top : Level
-    InAtomic : Level
-
 data Var (t : Thr) : Set where
     L : Loc t → Var t
     G : Glob → Var t
@@ -97,7 +93,7 @@ record LocCfg (t : Thr) : Set where
 LocCfgs : Set
 LocCfgs = (t : Thr) → LocCfg t
 
-notblocked : (l : LockSt) → Thr → Set
+notblocked : LockSt → Thr → Set
 notblocked nothing  t' = ⊤
 notblocked (just t) t' = t ≡ t'
 
