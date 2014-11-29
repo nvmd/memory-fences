@@ -43,18 +43,18 @@ data Var (t : Thr) : Set where
     G : Glob → Var t
 
 data Exp (t : Thr) : Ty → Set where
-    `_ : Var t → Exp t I
-    _⊕_ : Exp t I → Exp t I → Exp t I
-    _⊗_ : Exp t I → Exp t I → Exp t I
+    `_   : Var t → Exp t I
+    _⊕_  : Exp t I → Exp t I → Exp t I
+    _⊗_  : Exp t I → Exp t I → Exp t I
     _==_ : Exp t I → Exp t I → Exp t B
 
 data Stmt (t : Thr) : Set where
-    _:=_ : Var t → Exp t I → Stmt t
-    Skip : Stmt t
-    _\\_ : Stmt t → Stmt t → Stmt t
+    _:=_          : Var t → Exp t I → Stmt t
+    Skip          : Stmt t
+    _\\_          : Stmt t → Stmt t → Stmt t
     If_Then_Else_ : Exp t B → Stmt t → Stmt t → Stmt t
-    While_Do_ : Exp t B → Stmt t → Stmt t
-    Lock : Stmt t
+    While_Do_     : Exp t B → Stmt t → Stmt t
+    Lock   : Stmt t
     Unlock : Stmt t
     LFence : Stmt t
     SFence : Stmt t
@@ -79,15 +79,15 @@ LocMem t = Loc t → Int
 record GlobCfg : Set where
   constructor 〈_/_〉
   field
-    lockSt : LockSt
+    lockSt  : LockSt
     globMem : GlobMem
 
 record LocCfg (t : Thr) : Set where
   constructor 〈_/_/_/_〉
   field
-    residStmt : Maybe (Stmt t)
-    locMem : LocMem t
-    readCache : Cache
+    residStmt  : Maybe (Stmt t)
+    locMem     : LocMem t
+    readCache  : Cache
     writeCache : Cache
 
 LocCfgs : Set
