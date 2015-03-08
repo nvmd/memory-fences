@@ -69,11 +69,6 @@ data Stmt (t : Thr) : Set where
     LFence : Stmt t
     SFence : Stmt t
 
-
-data Val2 : Set where
-  ival : ℕ  → Val2
-  bval : Bool → Val2
-
 LockSt : Set
 LockSt = Maybe Thr
 

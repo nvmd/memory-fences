@@ -24,6 +24,7 @@ infix 3 _⊢_⟶e_
 infix 3 _⊢_⟶_
 infix 3 _⟶_
 
+
 postulate update : {X Y : Set} → List (X × Y) → X → Y → List (X × Y)
 --update = {!!}
 
@@ -33,16 +34,17 @@ postulate lookup : {X Y : Set} → List (X × Y) → X → Maybe Y
 postulate updateMem : {X Y : Set} → (X → Y) → X → Y → (X → Y)
 --updateMem = {!!}
 
--- Expression small-step semantics
+
+------------------------------------------------------------------------
+-- Expression semantics
+
 data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg × LocCfgExp t y → Set where
---  ⟶C : ∀ {ls gm lm rc wc y} → {c : Val y}
---    → t ⊢ 〈 ls / gm 〉 , 〈 inj₁ (C c) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 inj₂ c / lm / rc / wc 〉
 
   ⟶‵L : ∀ {ls gm lm rc wc x}
     → t ⊢ 〈 ls / gm 〉 , 〈 ` L x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (lm x) / lm / rc / wc 〉
 
   ⟶‵G : ∀ {ls gm lm rc wc x}
-    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in  〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
 
   ⟶⊕ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
     → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) ⊕ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ + c₂) / lm / rc / wc 〉
@@ -72,8 +74,9 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ == e₂' / lm / rc′ / wc' 〉
 
 
--- Statement small-step semantics
--- (t : Thr) ⊢ (s₀ : GlobCfg × LocCfg t) ⟶ (s₁ : GlobCfg × LocCfg t) : Set
+------------------------------------------------------------------------
+-- Statement semantics
+
 data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set where
 
   ⟶:=LocalConst : ∀ {ls gm x lm rc wc c}
@@ -129,7 +132,8 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
              → t ⊢ 〈 ls / gm 〉 , 〈 s / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 s / lm / rc / wc' 〉
 
 
--- Whole system semantics
+------------------------------------------------------------------------
+-- System semantics
 
 data _⟶_ : GlobCfg × LocCfgs → GlobCfg × LocCfgs → Set where
    step : (t : Thr) → ∀ {ls gm lcfgs ls' gm' lcfgs'}
