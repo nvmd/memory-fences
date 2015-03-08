@@ -3,6 +3,7 @@
 module SmallStep where
 
 open import X86TSO
+open import Utils
 
 open import Data.Bool
 open import Data.Nat
@@ -52,12 +53,24 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊕ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊕ e₂' / lm / rc′ / wc' 〉
 
-{-
-  ⟶⊗ : ∀ {ls gm lm rc wc}
-    → t ⊢ 〈 ls / gm 〉 , 〈 {!!} / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 {!!} / lm / rc / wc 〉
-  ⟶== : ∀ {ls gm e₁ e₂ eᵣ lm rc wc v₁ v₂ vᵣ}
-    → t ⊢ 〈 ls / gm 〉 , 〈 {!!} / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 {!!} / lm / rc / wc 〉
--}
+  ⟶⊗ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
+    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) ⊗ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ * c₂) / lm / rc / wc 〉
+  ⟶⊗r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' ⊗ e₂ / lm / rc′ / wc' 〉
+  ⟶⊗l : ∀ {ls gm lm rc wc rc′ wc'} → {e₁ e₂ e₂' : Exp t I}
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂' / lm / rc′ / wc' 〉
+
+  ⟶== : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
+    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) == (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (isEq c₁ c₂) / lm / rc / wc 〉
+  ⟶==r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' == e₂ / lm / rc′ / wc' 〉
+  ⟶==l : ∀ {ls gm lm rc wc rc′ wc'} → {e₁ e₂ e₂' : Exp t I}
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
+     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ == e₂' / lm / rc′ / wc' 〉
+
 
 -- Statement small-step semantics
 -- (t : Thr) ⊢ (s₀ : GlobCfg × LocCfg t) ⟶ (s₁ : GlobCfg × LocCfg t) : Set
