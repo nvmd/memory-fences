@@ -130,3 +130,5 @@ notBlocked : LockSt → Thr → Set
 notBlocked nothing  t' = ⊤
 notBlocked (just t) t' = t ≡ t'
 
+postulate noPendingOps : Cache → Glob → Set
+--noPendingOps = {!!}

@@ -35,7 +35,21 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
   ⟶‵L : ∀ {ls gm lm rc wc x}
     → t ⊢ 〈 ls / gm 〉 , 〈 ` L x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (lm x) / lm / rc / wc 〉
 
+{-
   ⟶‵G : ∀ {ls gm lm rc wc x}
+    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
+-}
+
+  -- p can read v from memory at address a if p is not blocked, has no buffered writes to a, and the memory does contain v at a;
+  ⟶‵Gmem : ∀ {ls gm lm rc wc x}
+    → notBlocked ls t
+    → noPendingOps wc x
+    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
+
+  -- p can read v from its write buffer for address a if p is not blocked and has v as the newest write to a in its buffer;
+  ⟶‵Gcache : ∀ {ls gm lm rc wc x}
+    → notBlocked ls t
+--    → noPendingOps wc x
     → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
 
   ⟶⊕ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
