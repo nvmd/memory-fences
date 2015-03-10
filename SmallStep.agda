@@ -25,14 +25,6 @@ infix 3 _⊢_⟶_
 infix 3 _⟶_
 
 
-postulate update : {X Y : Set} → List (X × Y) → X → Y → List (X × Y)
---update = {!!}
-
-postulate lookup : {X Y : Set} → List (X × Y) → X → Maybe Y
---lookup = {!!}
-
-postulate updateMem : {X Y : Set} → (X → Y) → X → Y → (X → Y)
---updateMem = {!!}
 
 
 ------------------------------------------------------------------------
@@ -115,21 +107,21 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
     → t ⊢ 〈 ls / gm 〉 , 〈 just (While cond Do stmt) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 just (If cond Then (stmt \\ While cond Do stmt) Else Skip) / lm / rc / wc 〉
 
   ⟶Lock : ∀ {gm lm rc}
-          → t ⊢ 〈 nothing / gm 〉 , 〈 just Lock / lm / rc / [] 〉 ⟶ 〈 just t / gm 〉 , 〈 nothing / lm / rc / [] 〉
+    → t ⊢ 〈 nothing / gm 〉 , 〈 just Lock / lm / rc / [] 〉 ⟶ 〈 just t / gm 〉 , 〈 nothing / lm / rc / [] 〉
 
   ⟶Unlock : ∀ {gm lm rc}
-            → t ⊢ 〈 just t / gm 〉 , 〈 just Unlock / lm / rc / [] 〉 ⟶ 〈 nothing / gm 〉 , 〈 nothing / lm / rc / [] 〉
+    → t ⊢ 〈 just t / gm 〉 , 〈 just Unlock / lm / rc / [] 〉 ⟶ 〈 nothing / gm 〉 , 〈 nothing / lm / rc / [] 〉
 
   ⟶LFence : ∀ {ls gm lm wc}
-            → t ⊢ 〈 ls / gm 〉 , 〈 just LFence / lm / [] / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / [] / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 just LFence / lm / [] / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / [] / wc 〉
 
   ⟶SFence : ∀ {ls gm lm rc}
-            → t ⊢ 〈 ls / gm 〉 , 〈 just SFence / lm / rc / [] 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / rc / [] 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 just SFence / lm / rc / [] 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / rc / [] 〉
 
   ⟶Dequeue : ∀ {ls gm s lm rc wc wc'}
-             → notblocked ls t
-             → wc ⇒ wc'
-             → t ⊢ 〈 ls / gm 〉 , 〈 s / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 s / lm / rc / wc' 〉
+    → notBlocked ls t
+    → wc ⇒ wc'
+    → t ⊢ 〈 ls / gm 〉 , 〈 s / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 s / lm / rc / wc' 〉
 
 
 ------------------------------------------------------------------------

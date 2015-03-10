@@ -33,12 +33,6 @@ Loc t = Fin (#locals t)
 Glob : Set
 Glob = Fin #globals
 
---Int : Set
---Int = ℕ
-
-MemAddr : Set
-MemAddr = ℕ
-
 data Ty : Set where
     I : Ty
     B : Ty
@@ -69,23 +63,44 @@ data Stmt (t : Thr) : Set where
     LFence : Stmt t
     SFence : Stmt t
 
+
+------------------------------------------------------------------------
+-- Global configuration
+
 LockSt : Set
 LockSt = Maybe Thr
 
 GlobMem : Set
 GlobMem = Glob → Val I
 
-Cache : Set
-Cache = List (Glob × Val I)
-
-LocMem : Thr → Set
-LocMem t = Loc t → Val I
-
 record GlobCfg : Set where
   constructor 〈_/_〉
   field
     lockSt  : LockSt
     globMem : GlobMem
+
+
+------------------------------------------------------------------------
+-- Local configuration
+
+LocMem : Thr → Set
+LocMem t = Loc t → Val I
+
+Cache : Set
+Cache = List (Glob × Val I)
+
+-- c₂ is a correctly dequeued c₁
+postulate _⇒_ : Cache → Cache → Set
+--c₁ ⇒ c₂ = {!!}
+
+postulate update : {X Y : Set} → List (X × Y) → X → Y → List (X × Y)
+--update = {!!}
+
+postulate lookup : {X Y : Set} → List (X × Y) → X → Maybe Y
+--lookup = {!!}
+
+postulate updateMem : {X Y : Set} → (X → Y) → X → Y → (X → Y)
+--updateMem = {!!}
 
 record LocCfg (t : Thr) : Set where
   constructor 〈_/_/_/_〉
@@ -94,6 +109,10 @@ record LocCfg (t : Thr) : Set where
     locMem     : LocMem t
     readCache  : Cache
     writeCache : Cache
+
+
+------------------------------------------------------------------------
+-- Local configuration for expression evaluation
 
 record LocCfgExp (t : Thr) (y : Ty) : Set where
   constructor 〈_/_/_/_〉
@@ -107,10 +126,7 @@ record LocCfgExp (t : Thr) (y : Ty) : Set where
 LocCfgs : Set
 LocCfgs = (t : Thr) → LocCfg t
 
-notblocked : LockSt → Thr → Set
-notblocked nothing  t' = ⊤
-notblocked (just t) t' = t ≡ t'
+notBlocked : LockSt → Thr → Set
+notBlocked nothing  t' = ⊤
+notBlocked (just t) t' = t ≡ t'
 
--- c₂ is a correctly dequeued c₁
-postulate _⇒_ : Cache → Cache → Set
---c₁ ⇒ c₂ = {!!}
