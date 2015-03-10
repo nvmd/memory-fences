@@ -35,22 +35,19 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
   ⟶‵L : ∀ {ls gm lm rc wc x}
     → t ⊢ 〈 ls / gm 〉 , 〈 ` L x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (lm x) / lm / rc / wc 〉
 
-{-
-  ⟶‵G : ∀ {ls gm lm rc wc x}
-    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
--}
-
-  -- p can read v from memory at address a if p is not blocked, has no buffered writes to a, and the memory does contain v at a;
-  ⟶‵Gmem : ∀ {ls gm lm rc wc x}
+  -- t can read x from memory if t is not blocked, has no buffered writes to x, and the memory does contain x:
+  -- not blocked -> no pending ops -> {x is in read cache -> read from read cache; x isn't in read cache -> read from the memory and update read cache} ∎
+  ⟶‵Grcmem : ∀ {ls gm lm rc wc x}
     → notBlocked ls t
     → noPendingOps wc x
     → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
 
-  -- p can read v from its write buffer for address a if p is not blocked and has v as the newest write to a in its buffer;
-  ⟶‵Gcache : ∀ {ls gm lm rc wc x}
+  -- t can read x from its write buffer if t is not blocked and has the newest write to x in its buffer:
+  -- not blocked -> x is write cache -> read x from write cache ∎
+  ⟶‵Gwc : ∀ {ls gm lm rc wc x}
     → notBlocked ls t
---    → noPendingOps wc x
-    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
+    → thereArePendingOps wc x -- do we really need this to distinguish `Gwc (this) case from `Grcmem?
+    → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 maybe′ C (C (gm x)) (lookup wc x) / lm / rc / wc 〉
 
   ⟶⊕ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
     → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) ⊕ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ + c₂) / lm / rc / wc 〉

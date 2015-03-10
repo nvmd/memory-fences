@@ -132,3 +132,4 @@ notBlocked (just t) t' = t ≡ t'
 
 postulate noPendingOps : Cache → Glob → Set
 --noPendingOps = {!!}
+postulate thereArePendingOps : Cache → Glob → Set
