@@ -47,6 +47,7 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
   ⟶‵Gwc : ∀ {ls gm lm rc wc x}
     → notBlocked ls t
     → thereArePendingOps wc x -- do we really need this to distinguish `Gwc (this) case from `Grcmem?
+                              -- yes, because we need to succed with lookup from wc, otherwice it would be `Grcmem case
     → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 maybe′ C (C (gm x)) (lookup wc x) / lm / rc / wc 〉
 
   ⟶⊕ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
