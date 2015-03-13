@@ -82,35 +82,35 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
 
 data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set where
 
-  ⟶:=LocalConst : ∀ {ls gm x lm rc wc c}
+  ⟶:=Local₀ : ∀ {ls gm x lm rc wc c}
     → t ⊢ 〈 ls / gm 〉 , 〈 just (L x := (C c)) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / updateMem lm x c / rc / wc 〉
 
-  ⟶:=Local : ∀ {ls gm x e lm rc wc ls′ gm′ e′ lm′ rc′}
+  ⟶:=Local₁ : ∀ {ls gm x e lm rc wc ls′ gm′ e′ lm′ rc′}
     → t ⊢ 〈 ls / gm 〉 , 〈 e / lm / rc / wc 〉 ⟶e 〈 ls′ / gm′ 〉 , 〈 e′ / lm′ / rc′ / wc 〉
     → t ⊢ 〈 ls / gm 〉 , 〈 just (L x := e) / lm / rc / wc 〉 ⟶ 〈 ls′ / gm′ 〉 , 〈 just (L x := e′) / lm′ / rc′ / wc 〉
 
-  ⟶:=GlobalConst : ∀ {ls gm x lm rc wc c}
+  ⟶:=Global₀ : ∀ {ls gm x lm rc wc c}
     → t ⊢ 〈 ls / gm 〉 , 〈 just (G x := (C c)) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / rc / update wc x c 〉
 
-  ⟶:=Global : ∀ {ls gm x e lm rc wc ls′ gm′ e′ lm′ rc′}
+  ⟶:=Global₁ : ∀ {ls gm x e lm rc wc ls′ gm′ e′ lm′ rc′}
     → t ⊢ 〈 ls / gm 〉 , 〈 e / lm / rc / wc 〉 ⟶e 〈 ls′ / gm′ 〉 , 〈 e′ / lm′ / rc′ / wc 〉
     → t ⊢ 〈 ls / gm 〉 , 〈 just (G x := e) / lm / rc / wc 〉 ⟶ 〈 ls′ / gm′ 〉 , 〈 just (G x := e′) / lm′ / rc′ / wc 〉
 
   ⟶Skip : ∀ {ls gm lm rc wc}
     → t ⊢ 〈 ls / gm 〉 , 〈 just Skip / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 nothing / lm / rc / wc 〉
 
-  ⟶\\₁ : ∀ {ls gm s s1 lm rc wc ls' gm' lm' rc' wc'}
+  ⟶\\₀ : ∀ {ls gm s s1 lm rc wc ls' gm' lm' rc' wc'}
     → t ⊢ 〈 ls / gm 〉 , 〈 just s / lm / rc / wc 〉 ⟶ 〈 ls' / gm' 〉 , 〈 nothing  / lm' / rc' / wc' 〉
     → t ⊢ 〈 ls / gm 〉 , 〈 just (s \\ s1) / lm / rc / wc 〉 ⟶ 〈 ls' / gm' 〉 , 〈 just s1  / lm' / rc' / wc' 〉
 
-  ⟶\\₂ : ∀ {ls gm s s1 lm rc wc ls' gm' s' lm' rc' wc'}
+  ⟶\\₁ : ∀ {ls gm s s1 lm rc wc ls' gm' s' lm' rc' wc'}
     → t ⊢ 〈 ls / gm 〉 , 〈 just s / lm / rc / wc 〉 ⟶ 〈 ls' / gm' 〉 , 〈 just s'  / lm' / rc' / wc' 〉
     → t ⊢ 〈 ls / gm 〉 , 〈 just (s \\ s1) / lm / rc / wc 〉 ⟶ 〈 ls' / gm' 〉 , 〈 just (s' \\ s1)  / lm' / rc' / wc' 〉
 
-  ⟶IfThenElseConst : ∀ {ls gm lm rc wc c s₀ s₁}
+  ⟶IfThenElse₀ : ∀ {ls gm lm rc wc c s₀ s₁}
     → t ⊢ 〈 ls / gm 〉 , 〈 just (If (C c) Then s₀ Else s₁) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 just (if c then s₀ else s₁) / lm / rc / wc 〉
 
-  ⟶IfThenElse : ∀ {ls ls′ gm gm′ lm lm′ rc rc′ wc e e′ s₀ s₁}
+  ⟶IfThenElse₁ : ∀ {ls ls′ gm gm′ lm lm′ rc rc′ wc e e′ s₀ s₁}
     → t ⊢ 〈 ls / gm 〉 , 〈 e / lm / rc / wc 〉 ⟶e 〈 ls′ / gm′ 〉 , 〈 e′ / lm′ / rc′ / wc 〉
     → t ⊢ 〈 ls / gm 〉 , 〈 just (If e Then s₀ Else s₁) / lm / rc / wc 〉 ⟶ 〈 ls′ / gm′ 〉 , 〈 just (If e′ Then s₀ Else s₁) / lm′ / rc′ / wc 〉
 
