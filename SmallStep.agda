@@ -6,13 +6,14 @@ open import X86TSO
 open import Utils
 
 open import Data.Bool
-open import Data.Nat
+open import Data.Nat renaming (_≟_ to _≟ℕ_)
 open import Data.Product
 open import Data.Sum
 open import Data.Maybe
 open import Data.List
 open import Relation.Binary.PropositionalEquality
 open import Data.Empty
+open import Relation.Nullary.Decidable
 
 -- 〈 --- \langle
 -- 〉 --- \rangle
@@ -69,7 +70,7 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂' / lm / rc′ / wc' 〉
 
   ⟶== : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
-    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) == (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (isEq c₁ c₂) / lm / rc / wc 〉
+    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) == (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (⌊ c₁ ≟ℕ c₂ ⌋) / lm / rc / wc 〉
   ⟶==r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
      → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' == e₂ / lm / rc′ / wc' 〉
