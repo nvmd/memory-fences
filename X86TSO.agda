@@ -2,7 +2,7 @@
 
 module X86TSO where
 
-open import Data.Fin hiding (_+_)
+open import Data.Fin
 open import Data.Nat
 open import Data.Unit
 open import Data.Empty
@@ -11,7 +11,12 @@ open import Data.Maybe
 open import Data.List
 open import Data.Product
 open import Data.Sum
-open import Relation.Binary.PropositionalEquality
+
+open import Relation.Binary.PropositionalEquality as PropEq
+                                                  using (_≡_; refl)
+open import Data.Fin.Properties as FinProps
+
+import Utils as Utils
 
 
 record ProgParams : Set where
@@ -96,8 +101,9 @@ postulate _⇒_ : Cache → Cache → Set
 postulate update : {X Y : Set} → List (X × Y) → X → Y → List (X × Y)
 --update = {!!}
 
-postulate lookup : {X Y : Set} → List (X × Y) → X → Maybe Y
---lookup = {!!}
+lookup : Cache → Glob → Maybe (Val I)
+--lookup c q = lookup₀ (eq? {!!}) c q -- decidability for Fin via injection to ℕ
+lookup c q = Utils.lookup FinProps._≟_ c q
 
 postulate updateMem : {X Y : Set} → (X → Y) → X → Y → (X → Y)
 --updateMem = {!!}
