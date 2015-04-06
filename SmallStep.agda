@@ -3,7 +3,6 @@
 module SmallStep where
 
 open import X86TSO
-open import Utils
 
 open import Data.Bool
 open import Data.Nat renaming (_≟_ to _≟ℕ_)

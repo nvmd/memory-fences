@@ -46,6 +46,6 @@ lookup₁ d xs q = head (proj₂ (unzip (filter p xs)))
 --                  p (x , y) = ⌊ d x q ⌋
 -}
 
-lookup : {X Y : Set} → Decidable {A = X} {B = X} _≡_ → List (X × Y) → X → Maybe Y
+lookup : {X Y : Set} → Decidable {A = X} _≡_ → List (X × Y) → X → Maybe Y
 lookup d xs q = let p = λ x → ⌊ d (proj₁ x) q ⌋
                  in head (proj₂ (unzip (filter p xs)))
