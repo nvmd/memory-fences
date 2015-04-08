@@ -98,8 +98,8 @@ Cache = List (Glob × Val I)
 postulate _⇒_ : Cache → Cache → Set
 --c₁ ⇒ c₂ = {!!}
 
-postulate update : {X Y : Set} → List (X × Y) → X → Y → List (X × Y)
---update = {!!}
+update : Cache → Glob → Val I → Cache
+update c var val = (var , val) ∷ c
 
 lookup : Cache → Glob → Maybe (Val I)
 --lookup c q = lookup₀ (eq? {!!}) c q -- decidability for Fin via injection to ℕ
