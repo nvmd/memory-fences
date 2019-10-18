@@ -1,15 +1,15 @@
 {-# OPTIONS --allow-unsolved-metas #-}
 
-module SmallStep where
+module X86TSO.SmallStep where
 
-open import X86TSO
+open import X86TSO.Core
 
 open import Data.Bool
 open import Data.Nat renaming (_≟_ to _≟ℕ_)
 open import Data.Product
 open import Data.Sum
 open import Data.Maybe
-open import Data.List
+open import Data.List using (List; [])
 open import Relation.Binary.PropositionalEquality
 open import Data.Empty
 open import Relation.Nullary.Decidable
@@ -26,6 +26,9 @@ infix 3 _⟶_
 
 
 
+--ExpOpConsts : {t : Thr} → ∀ { } →  {X Y Z : Ty}  → (Exp t X → Exp t Y → Exp t Z) → (Val X → Val Y → Val Z) → Set
+--ExpOpConsts
+
 
 ------------------------------------------------------------------------
 -- Expression semantics
@@ -36,14 +39,15 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
     → t ⊢ 〈 ls / gm 〉 , 〈 ` L x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (lm x) / lm / rc / wc 〉
 
   -- t can read x from memory if t is not blocked, has no buffered writes to x, and the memory does contain x:
-  -- not blocked -> no pending ops -> {x is in read cache -> read from read cache; x isn't in read cache -> read from the memory and update read cache} ∎
+  -- not blocked -> no pending ops -> {x is    in read cache -> read from read cache;
+  --                                   x isn't in read cache -> read from the memory, update read cache} ∎
   ⟶‵Grcmem : ∀ {ls gm lm rc wc x}
     → notBlocked ls t
     → noPendingOps wc x
     → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , let z = (lookup rc x) in 〈 maybe′ C (C (gm x)) z / lm / maybe′ (λ _ → rc) (update rc x (gm x)) z / wc 〉
 
   -- t can read x from its write buffer if t is not blocked and has the newest write to x in its buffer:
-  -- not blocked -> x is write cache -> read x from write cache ∎
+  -- not blocked -> x is in write cache -> read x from the write cache ∎
   ⟶‵Gwc : ∀ {ls gm lm rc wc x}
     → notBlocked ls t
     → thereArePendingOps wc x -- do we really need this to distinguish `Gwc (this) case from `Grcmem?
@@ -51,31 +55,31 @@ data _⊢_⟶e_ (t : Thr) : {y : Ty} → GlobCfg × LocCfgExp t y → GlobCfg ×
     → t ⊢ 〈 ls / gm 〉 , 〈 ` G x / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 maybe′ C (C (gm x)) (lookup wc x) / lm / rc / wc 〉
 
   ⟶⊕ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
-    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) ⊕ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ + c₂) / lm / rc / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 (C c₁) ⊕ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ + c₂) / lm / rc / wc 〉
   ⟶⊕r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊕ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' ⊕ e₂ / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁      / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁'      / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ ⊕ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' ⊕ e₂ / lm / rc′ / wc' 〉
   ⟶⊕l : ∀ {ls gm lm rc wc rc′ wc'} → {e₁ e₂ e₂' : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊕ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊕ e₂' / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₂      / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂'      / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ ⊕ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊕ e₂' / lm / rc′ / wc' 〉
 
   ⟶⊗ : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
-    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) ⊗ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ * c₂) / lm / rc / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 (C c₁) ⊗ (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (c₁ * c₂) / lm / rc / wc 〉
   ⟶⊗r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' ⊗ e₂ / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁      / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁'      / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' ⊗ e₂ / lm / rc′ / wc' 〉
   ⟶⊗l : ∀ {ls gm lm rc wc rc′ wc'} → {e₁ e₂ e₂' : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂' / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₂      / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂'      / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ ⊗ e₂' / lm / rc′ / wc' 〉
 
   ⟶== : ∀ {ls gm lm rc wc} → {c₁ c₂ : Val I}
-    → t ⊢ 〈 ls  / gm  〉 , 〈 (C c₁) == (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (⌊ c₁ ≟ℕ c₂ ⌋) / lm / rc / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 (C c₁) == (C c₂) / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 C (⌊ c₁ ≟ℕ c₂ ⌋) / lm / rc / wc 〉
   ⟶==r : ∀ {ls gm lm rc rc′ wc wc'} → {e₁ e₁' e₂ : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' == e₂ / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁       / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁'       / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁' == e₂ / lm / rc′ / wc' 〉
   ⟶==l : ∀ {ls gm lm rc wc rc′ wc'} → {e₁ e₂ e₂' : Exp t I}
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂' / lm / rc′ / wc' 〉
-     → t ⊢ 〈 ls  / gm  〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ == e₂' / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₂       / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₂'       / lm / rc′ / wc' 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 e₁ == e₂ / lm / rc / wc 〉 ⟶e 〈 ls / gm 〉 , 〈 e₁ == e₂' / lm / rc′ / wc' 〉
 
 
 ------------------------------------------------------------------------
@@ -116,7 +120,7 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
     → t ⊢ 〈 ls / gm 〉 , 〈 just (If e Then s₀ Else s₁) / lm / rc / wc 〉 ⟶ 〈 ls′ / gm′ 〉 , 〈 just (If e′ Then s₀ Else s₁) / lm′ / rc′ / wc 〉
 
   ⟶WhileDo : ∀ {ls gm lm rc wc cond stmt}
-    → t ⊢ 〈 ls / gm 〉 , 〈 just (While cond Do stmt) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 just (If cond Then (stmt \\ While cond Do stmt) Else Skip) / lm / rc / wc 〉
+    → t ⊢ 〈 ls / gm 〉 , 〈 just (While cond Do stmt) / lm / rc / wc 〉 ⟶ 〈 ls / gm 〉 , 〈 just (If cond Then (stmt \\ (While cond Do stmt)) Else Skip) / lm / rc / wc 〉
 
   ⟶Lock : ∀ {gm lm rc}
     → t ⊢ 〈 nothing / gm 〉 , 〈 just Lock / lm / rc / [] 〉 ⟶ 〈 just t / gm 〉 , 〈 nothing / lm / rc / [] 〉
@@ -140,7 +144,7 @@ data _⊢_⟶_ (t : Thr) : GlobCfg × LocCfg t → GlobCfg × LocCfg t → Set w
 -- System semantics
 
 data _⟶_ : GlobCfg × LocCfgs → GlobCfg × LocCfgs → Set where
-   step : (t : Thr) → ∀ {ls gm lcfgs ls' gm' lcfgs'}
-          → t ⊢ 〈 ls / gm 〉 , lcfgs t ⟶ 〈 ls' / gm' 〉 , lcfgs' t
-          → ((t' : Thr) → t ≢ t' → lcfgs t' ≡ lcfgs' t')
-          → 〈 ls / gm 〉 , lcfgs ⟶ 〈 ls' / gm' 〉 , lcfgs'
+ step : (t : Thr) → ∀ {ls gm lcfgs ls' gm' lcfgs'}
+   → t ⊢ 〈 ls / gm 〉 , lcfgs t ⟶ 〈 ls' / gm' 〉 , lcfgs' t
+   → ((t' : Thr) → t ≢ t' → lcfgs t' ≡ lcfgs' t')
+   → 〈 ls / gm 〉 , lcfgs ⟶ 〈 ls' / gm' 〉 , lcfgs'

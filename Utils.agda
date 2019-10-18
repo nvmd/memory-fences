@@ -1,6 +1,8 @@
+{-# OPTIONS --allow-unsolved-metas #-}
+
 module Utils where
 
-open import Data.List
+open import Data.List using (List; _∷_; []; filter)
 open import Data.Maybe
 open import Data.Product
 
@@ -11,7 +13,7 @@ open import Data.Fin
 open import Relation.Binary.PropositionalEquality as PropEq
                                                   using (_≡_; refl)
 open import Function using (_∘_)
-open import Relation.Nullary.Core
+
 
 head : {X : Set} → List X → Maybe X
 head []       = nothing
@@ -23,7 +25,6 @@ unzip ((x , y) ∷ xs) = x ∷ rx , y ∷ ry
                      where uz = unzip xs
                            rx = proj₁ uz
                            ry = proj₂ uz
-
 
 {-
 infix 4 _≟Fin_
@@ -48,4 +49,5 @@ lookup₁ d xs q = head (proj₂ (unzip (filter p xs)))
 
 lookup : {X Y : Set} → Decidable {A = X} _≡_ → List (X × Y) → X → Maybe Y
 lookup d xs q = let p = λ x → ⌊ d (proj₁ x) q ⌋
-                 in head (proj₂ (unzip (filter p xs)))
+                 in head (proj₂ (unzip (filter {!!} xs)))
+

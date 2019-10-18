@@ -1,7 +1,7 @@
 module SmallStepLemmas where
 
-open import X86TSO
-open import SmallStep
+open import X86TSO.Core
+open import X86TSO.SmallStep
 
 open import Data.Bool
 open import Data.Nat
